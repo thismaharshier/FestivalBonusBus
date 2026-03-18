@@ -1,0 +1,130 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - displayName: string
+    //   - role: string (student|driver|admin) (required)
+    //   - busNumber: string
+    //
+    // Collection: contributions
+    // Document ID: {contributionId}
+    // Fields:
+    //   - studentUid: string (required)
+    //   - studentName: string
+    //   - amount: number (required, positive)
+    //   - busNumber: string (required)
+    //   - purpose: string (required)
+    //   - timestamp: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+        (request.auth.token.email == "withprint231@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+
+    function isDriver() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'driver';
+    }
+
+    function isStudent() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student';
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid == request.auth.uid &&
+             data.email is string && data.email.size() > 0 &&
+             data.role in ['student', 'driver', 'admin'] &&
+             (!('busNumber' in data) || (data.busNumber is string && data.busNumber.size() < 20)) &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() < 100));
+    }
+
+    function isValidContribution(data) {
+      return data.keys().hasAll(['studentUid', 'amount', 'busNumber', 'purpose', 'timestamp']) &&
+             data.studentUid == request.auth.uid &&
+             data.amount is number && data.amount > 0 &&
+             data.busNumber is string && data.busNumber.size() > 0 && data.busNumber.size() < 20 &&
+             data.purpose is string && data.purpose.size() > 0 && data.purpose.size() < 50 &&
+             data.timestamp is timestamp;
+    }
+
+    function isValidPledge(data) {
+      return data.keys().hasAll(['name', 'email', 'amount', 'goal', 'timestamp']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             data.amount is number && data.amount > 0 &&
+             data.goal is string && data.goal.size() > 0 && data.goal.size() < 100 &&
+             data.timestamp is timestamp;
+    }
+
+    function isValidMessage(data) {
+      return data.keys().hasAll(['email', 'message', 'timestamp']) &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             data.message is string && data.message.size() > 0 && data.message.size() < 2000 &&
+             data.timestamp is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      
+      // Allow creation if owner and not trying to be admin (unless already admin)
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && 
+                      (request.resource.data.role != 'admin' || isAdmin());
+                      
+      // Allow update if owner and role/email/uid unchanged
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && 
+                      request.resource.data.role == resource.data.role &&
+                      request.resource.data.email == resource.data.email &&
+                      request.resource.data.uid == resource.data.uid;
+    }
+
+    match /contributions/{contributionId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+
+    match /pledges/{pledgeId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isAdmin();
+    }
+
+    match /messages/{messageId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if isAdmin();
+    }
+  }
+}

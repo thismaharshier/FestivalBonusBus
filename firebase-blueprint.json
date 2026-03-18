@@ -1,0 +1,77 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information and role.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique Firebase Auth ID." },
+        "email": { "type": "string", "format": "email", "description": "User email address." },
+        "displayName": { "type": "string", "description": "User's full name." },
+        "role": { "type": "string", "enum": ["student", "driver"], "description": "User's role in the system." },
+        "busNumber": { "type": "string", "description": "The bus number the user is associated with (optional for students, required for drivers)." }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Contribution": {
+      "title": "Contribution",
+      "description": "A contribution made by a student to a bus driver.",
+      "type": "object",
+      "properties": {
+        "studentUid": { "type": "string", "description": "UID of the student who contributed." },
+        "studentName": { "type": "string", "description": "Name of the student." },
+        "studentEmail": { "type": "string", "format": "email", "description": "Email of the student." },
+        "studentPhone": { "type": "string", "description": "Phone of the student." },
+        "amount": { "type": "number", "description": "Amount of money/bones contributed." },
+        "busNumber": { "type": "string", "description": "The bus number this contribution is for." },
+        "purpose": { "type": "string", "description": "The reason for the contribution." },
+        "goalType": { "type": "string", "enum": ["General", "Festival Bonus"], "description": "Type of goal." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "When the contribution was made." }
+      },
+      "required": ["studentUid", "amount", "busNumber", "timestamp"]
+    },
+    "Pledge": {
+      "title": "Pledge",
+      "description": "A pledge to support the fund.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the person pledging." },
+        "email": { "type": "string", "format": "email", "description": "Email of the person pledging." },
+        "phone": { "type": "string", "description": "Phone number of the person pledging." },
+        "amount": { "type": "number", "description": "Amount pledged in INR." },
+        "goal": { "type": "string", "description": "Specific goal or General Donation." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "When the pledge was made." }
+      },
+      "required": ["name", "email", "amount", "timestamp"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A contact message from a user.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email", "description": "Email of the sender." },
+        "message": { "type": "string", "description": "The message content." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "When the message was sent." }
+      },
+      "required": ["email", "message", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents."
+    },
+    "/contributions/{contributionId}": {
+      "schema": "Contribution",
+      "description": "Log of all contributions."
+    },
+    "/pledges/{pledgeId}": {
+      "schema": "Pledge",
+      "description": "Pledges made by users."
+    },
+    "/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Contact messages from users."
+    }
+  }
+}
