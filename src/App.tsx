@@ -47,7 +47,10 @@ import {
   Heart,
   Mail,
   Send,
-  Handshake
+  Handshake,
+  Smartphone,
+  QrCode,
+  Copy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { loadStripe } from '@stripe/stripe-js';
@@ -127,7 +130,8 @@ function SupportPage({
   amountInput, setAmountInput,
   busInput, setBusInput,
   purposeInput, setPurposeInput,
-  goalType, setGoalType
+  goalType, setGoalType,
+  paymentMethod, setPaymentMethod
 }: { 
   user: FirebaseUser | null, 
   profile: UserProfile | null,
@@ -141,7 +145,8 @@ function SupportPage({
   amountInput: string, setAmountInput: (v: string) => void,
   busInput: string, setBusInput: (v: string) => void,
   purposeInput: string, setPurposeInput: (v: string) => void,
-  goalType: 'General' | 'Festival Bonus', setGoalType: (v: 'General' | 'Festival Bonus') => void
+  goalType: 'General' | 'Festival Bonus', setGoalType: (v: 'General' | 'Festival Bonus') => void,
+  paymentMethod: 'stripe' | 'upi', setPaymentMethod: (v: 'stripe' | 'upi') => void
 }) {
   const [pledgeName, setPledgeName] = useState(user?.displayName || '');
   const [pledgeEmail, setPledgeEmail] = useState(user?.email || '');
@@ -216,7 +221,7 @@ function SupportPage({
         <section className="space-y-8">
           <div className="text-center space-y-2">
             <h2 className="text-4xl font-bold flex items-center justify-center gap-3">
-              Contribute Now 🦴
+              Contribute Now
             </h2>
             <p className="text-gray-500 font-sans">
               Make a direct contribution to your bus fund.
@@ -303,6 +308,24 @@ function SupportPage({
                           Festival Bonus
                         </button>
                       </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button 
+                          type="button"
+                          onClick={() => setPaymentMethod('upi')}
+                          className={`p-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${paymentMethod === 'upi' ? 'bg-white text-[#5A5A40]' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                        >
+                          <Smartphone className="w-4 h-4" />
+                          UPI
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => setPaymentMethod('stripe')}
+                          className={`p-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${paymentMethod === 'stripe' ? 'bg-white text-[#5A5A40]' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                        >
+                          <DollarSign className="w-4 h-4" />
+                          Card
+                        </button>
+                      </div>
                       <input 
                         type="text" 
                         value={busInput}
@@ -322,14 +345,18 @@ function SupportPage({
                   <button 
                     type="submit"
                     disabled={isCreatingIntent}
-                    className="w-full bg-emerald-500 text-white py-4 rounded-full font-bold hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 mt-4 flex items-center justify-center gap-2 group disabled:opacity-50"
+                    className={`w-full py-4 rounded-full font-bold transition-all shadow-lg mt-4 flex items-center justify-center gap-2 group disabled:opacity-50 ${paymentMethod === 'upi' ? 'bg-blue-500 hover:bg-blue-600 shadow-blue-500/20' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'}`}
                   >
                     {isCreatingIntent ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                       <>
-                        <span>Send Money</span>
-                        <DollarSign className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        <span>{paymentMethod === 'upi' ? 'Pay via UPI' : 'Pay via Card'}</span>
+                        {paymentMethod === 'upi' ? (
+                          <Smartphone className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        ) : (
+                          <DollarSign className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        )}
                       </>
                     )}
                   </button>
@@ -684,6 +711,64 @@ function CheckoutForm({ amount, onPaymentSuccess, onCancel }: { amount: number, 
   );
 }
 
+function UpiModal({ amount, upiId, onComplete, onCancel }: { amount: number, upiId: string, onComplete: () => void, onCancel: () => void }) {
+  const upiLink = `upi://pay?pa=${upiId}&pn=FestivalBonus&cu=INR&am=${amount}`;
+  
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(upiId);
+    alert("UPI ID copied to clipboard!");
+  };
+
+  return (
+    <div className="space-y-6 text-center">
+      <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100 space-y-4">
+        <Smartphone className="w-12 h-12 text-blue-600 mx-auto" />
+        <div>
+          <h3 className="text-xl font-bold text-gray-900">Pay via UPI</h3>
+          <p className="text-sm text-gray-500">Scan or use the UPI ID below to pay ₹{amount.toLocaleString()}</p>
+        </div>
+      </div>
+
+      <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between gap-3">
+        <code className="text-sm font-mono font-bold text-blue-600 truncate">{upiId}</code>
+        <button 
+          onClick={copyToClipboard}
+          className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+          title="Copy UPI ID"
+        >
+          <Copy className="w-4 h-4 text-gray-400" />
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        <a 
+          href={upiLink}
+          className="w-full bg-blue-600 text-white py-4 rounded-full font-bold hover:bg-blue-700 transition-all shadow-lg flex items-center justify-center gap-3"
+        >
+          <Smartphone className="w-5 h-5" />
+          Open UPI App
+        </a>
+        <p className="text-[10px] text-gray-400 uppercase tracking-widest">Works with GPay, PhonePe, Paytm, etc.</p>
+      </div>
+
+      <div className="pt-4 border-t border-gray-100 flex gap-3">
+        <button
+          onClick={onCancel}
+          className="flex-1 py-3 border border-gray-200 rounded-full font-bold hover:bg-gray-50 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onComplete}
+          className="flex-1 bg-emerald-500 text-white py-3 rounded-full font-bold hover:bg-emerald-600 transition-all shadow-lg"
+        >
+          I've Paid
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function AppContent() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -706,6 +791,9 @@ function AppContent() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [isCreatingIntent, setIsCreatingIntent] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'upi'>('upi');
+  const [showUpiModal, setShowUpiModal] = useState(false);
+  const UPI_ID = "ramuluankireddy96-1@oksbi";
 
   // Connection Test
   useEffect(() => {
@@ -862,6 +950,11 @@ function AppContent() {
       return;
     }
 
+    if (paymentMethod === 'upi') {
+      setShowUpiModal(true);
+      return;
+    }
+
     // Step 1: Create Payment Intent
     setIsCreatingIntent(true);
     try {
@@ -935,59 +1028,37 @@ function AppContent() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#F5F5F0] font-serif">
-        {/* Header with Login */}
-        <header className="bg-white border-b border-gray-100 p-6 sticky top-0 z-50">
-          <div className="max-w-5xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#5A5A40] rounded-full flex items-center justify-center">
-                <Bus className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-[#1A1A1A]">Festival Bonus Bus Drive</h1>
-            </div>
-            <button 
-              onClick={handleLogin}
-              className="bg-[#5A5A40] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#4A4A30] transition-colors flex items-center justify-center gap-2 text-sm"
-            >
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-4 h-4" />
-              Sign in
-            </button>
+      <div className="min-h-screen bg-[#F5F5F0] font-serif flex items-center justify-center p-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full bg-white rounded-[40px] p-12 shadow-2xl text-center space-y-8"
+        >
+          <div className="w-20 h-20 bg-[#5A5A40] rounded-3xl flex items-center justify-center mx-auto mb-4 rotate-3">
+            <Bus className="w-10 h-10 text-white" />
           </div>
-        </header>
-
-        {/* Support Page Content */}
-        <SupportPage 
-          user={null} 
-          profile={null}
-          totalFund={totalFund} 
-          contributionsCount={contributions.length} 
-          onContribute={() => handleLogin()}
-          isCreatingIntent={false}
-          nameInput={nameInput} setNameInput={setNameInput}
-          emailInput={emailInput} setEmailInput={setEmailInput}
-          phoneInput={phoneInput} setPhoneInput={setPhoneInput}
-          amountInput={amountInput} setAmountInput={setAmountInput}
-          busInput={busInput} setBusInput={setBusInput}
-          purposeInput={purposeInput} setPurposeInput={setPurposeInput}
-          goalType={goalType} setGoalType={setGoalType}
-        />
-
-        {/* Footer / Login CTA */}
-        <footer className="bg-white border-t border-gray-100 py-20 px-6 text-center">
-          <div className="max-w-md mx-auto space-y-6">
-            <h2 className="text-3xl font-bold">Ready to contribute?</h2>
+          
+          <div className="space-y-4">
+            <h1 className="text-4xl font-bold text-[#1A1A1A]">Festival Bonus</h1>
             <p className="text-[#5A5A40] leading-relaxed">
-              Sign in to make a direct contribution to your bus fund and track your history.
+              Welcome to the Bus Drive fund. Please sign in with your Google account to access your dashboard and contribute.
             </p>
-            <button 
-              onClick={handleLogin}
-              className="w-full bg-[#5A5A40] text-white py-4 rounded-full font-semibold hover:bg-[#4A4A30] transition-colors flex items-center justify-center gap-3"
-            >
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
-              Get Started with Google
-            </button>
           </div>
-        </footer>
+
+          <button 
+            onClick={handleLogin}
+            className="w-full bg-[#5A5A40] text-white py-5 rounded-full font-bold hover:bg-[#4A4A30] transition-all flex items-center justify-center gap-4 shadow-lg hover:shadow-xl active:scale-95"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
+            Sign in with Google
+          </button>
+
+          <div className="pt-6 border-t border-gray-100">
+            <p className="text-xs text-gray-400 font-sans uppercase tracking-widest">
+              Secure Login via Firebase Auth
+            </p>
+          </div>
+        </motion.div>
       </div>
     );
   }
@@ -1235,10 +1306,11 @@ function AppContent() {
           busInput={busInput} setBusInput={setBusInput}
           purposeInput={purposeInput} setPurposeInput={setPurposeInput}
           goalType={goalType} setGoalType={setGoalType}
+          paymentMethod={paymentMethod} setPaymentMethod={setPaymentMethod}
         />
       )}
 
-      {/* Payment Modal */}
+      {/* Payment Modal (Stripe) */}
       <AnimatePresence>
         {showPaymentModal && stripeClientSecret && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
@@ -1292,6 +1364,45 @@ function AppContent() {
                   onCancel={() => setShowPaymentModal(false)}
                 />
               </Elements>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* UPI Modal */}
+      <AnimatePresence>
+        {showUpiModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowUpiModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.5, opacity: 0, y: 50 }}
+              animate={{ 
+                scale: [0.5, 1.2, 1],
+                opacity: 1,
+                y: 0
+              }}
+              transition={{ 
+                duration: 0.6,
+                times: [0, 0.7, 1],
+                ease: "easeOut"
+              }}
+              className="relative bg-white rounded-[40px] p-10 w-full max-w-md shadow-2xl border border-gray-100"
+            >
+              <UpiModal 
+                amount={parseFloat(amountInput)}
+                upiId={UPI_ID}
+                onComplete={() => {
+                  setShowUpiModal(false);
+                  finalizeContribution();
+                }}
+                onCancel={() => setShowUpiModal(false)}
+              />
             </motion.div>
           </div>
         )}
