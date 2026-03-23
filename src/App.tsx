@@ -9,10 +9,7 @@ import React from 'react';
 import { useState, useEffect, Component, ErrorInfo, ReactNode } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { 
-  signInWithPopup, 
-  GoogleAuthProvider, 
   onAuthStateChanged, 
-  signOut, 
   User as FirebaseUser 
 } from 'firebase/auth';
 import { 
@@ -33,7 +30,6 @@ import { auth, db } from './firebase';
 import { 
   Bus, 
   Coins, 
-  LogOut, 
   User as UserIcon, 
   History, 
   Plus, 
@@ -234,139 +230,120 @@ function SupportPage({
             viewport={{ once: true }}
             className="bg-[#5A5A40] rounded-[48px] p-8 md:p-12 shadow-2xl text-white"
           >
-            {!user ? (
-              <div className="text-center space-y-6 py-8">
-                <p className="text-lg opacity-90 leading-relaxed max-w-md mx-auto">
-                  Sign in with your student account to make a direct contribution and track your history.
-                </p>
+            <form onSubmit={onContribute} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-sans font-semibold uppercase tracking-widest mb-2 opacity-70">Your Details</label>
+                  <div className="space-y-2">
+                    <input 
+                      type="text" 
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      placeholder="Full Name"
+                      className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder:text-white/30"
+                    />
+                    <input 
+                      type="email" 
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      placeholder="Email Address"
+                      className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder:text-white/30"
+                    />
+                    <input 
+                      type="tel" 
+                      value={phoneInput}
+                      onChange={(e) => setPhoneInput(e.target.value)}
+                      placeholder="Phone Number"
+                      className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder:text-white/30"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-sans font-semibold uppercase tracking-widest mb-2 opacity-70">Contribution Details</label>
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 font-sans font-bold">₹</span>
+                      <input 
+                        type="number" 
+                        value={amountInput}
+                        onChange={(e) => setAmountInput(e.target.value)}
+                        placeholder="Amount"
+                        className="w-full p-4 pl-8 bg-white/10 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder:text-white/30"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button 
+                        type="button"
+                        onClick={() => setGoalType('General')}
+                        className={`p-3 rounded-xl text-xs font-bold transition-all ${goalType === 'General' ? 'bg-white text-[#5A5A40]' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                      >
+                        General
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setGoalType('Festival Bonus')}
+                        className={`p-3 rounded-xl text-xs font-bold transition-all ${goalType === 'Festival Bonus' ? 'bg-white text-[#5A5A40]' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                      >
+                        Festival Bonus
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button 
+                        type="button"
+                        onClick={() => setPaymentMethod('upi')}
+                        className={`p-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${paymentMethod === 'upi' ? 'bg-white text-[#5A5A40]' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                      >
+                        <Smartphone className="w-4 h-4" />
+                        UPI
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setPaymentMethod('stripe')}
+                        className={`p-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${paymentMethod === 'stripe' ? 'bg-white text-[#5A5A40]' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                      >
+                        <DollarSign className="w-4 h-4" />
+                        Card
+                      </button>
+                    </div>
+                    <input 
+                      type="text" 
+                      value={busInput}
+                      onChange={(e) => setBusInput(e.target.value)}
+                      placeholder="Bus Number (e.g. 42)"
+                      className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder:text-white/30"
+                    />
+                    <input 
+                      type="text" 
+                      value={purposeInput}
+                      onChange={(e) => setPurposeInput(e.target.value)}
+                      placeholder={goalType === 'Festival Bonus' ? 'e.g. Festival Bonus' : 'e.g. Field Trip'}
+                      className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder:text-white/30"
+                    />
+                  </div>
+                </div>
                 <button 
-                  onClick={onContribute} // This calls handleLogin in unauthenticated view
-                  className="bg-white text-[#5A5A40] px-10 py-4 rounded-full font-bold hover:bg-gray-100 transition-all shadow-xl flex items-center justify-center gap-3 mx-auto"
+                  type="submit"
+                  disabled={isCreatingIntent}
+                  className={`w-full py-4 rounded-full font-bold transition-all shadow-lg mt-4 flex items-center justify-center gap-2 group disabled:opacity-50 ${paymentMethod === 'upi' ? 'bg-blue-500 hover:bg-blue-600 shadow-blue-500/20' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'}`}
                 >
-                  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
-                  Sign in to Contribute
+                  {isCreatingIntent ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <span>{paymentMethod === 'upi' ? 'Pay via UPI' : 'Pay via Card'}</span>
+                      {paymentMethod === 'upi' ? (
+                        <Smartphone className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                      ) : (
+                        <DollarSign className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                      )}
+                    </>
+                  )}
                 </button>
               </div>
-            ) : profile?.role === 'student' ? (
-              <form onSubmit={onContribute} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-sans font-semibold uppercase tracking-widest mb-2 opacity-70">Your Details</label>
-                    <div className="space-y-2">
-                      <input 
-                        type="text" 
-                        value={nameInput}
-                        onChange={(e) => setNameInput(e.target.value)}
-                        placeholder="Full Name"
-                        className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder:text-white/30"
-                      />
-                      <input 
-                        type="email" 
-                        value={emailInput}
-                        onChange={(e) => setEmailInput(e.target.value)}
-                        placeholder="Email Address"
-                        className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder:text-white/30"
-                      />
-                      <input 
-                        type="tel" 
-                        value={phoneInput}
-                        onChange={(e) => setPhoneInput(e.target.value)}
-                        placeholder="Phone Number"
-                        className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder:text-white/30"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-sans font-semibold uppercase tracking-widest mb-2 opacity-70">Contribution Details</label>
-                    <div className="space-y-2">
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 font-sans font-bold">₹</span>
-                        <input 
-                          type="number" 
-                          value={amountInput}
-                          onChange={(e) => setAmountInput(e.target.value)}
-                          placeholder="Amount"
-                          className="w-full p-4 pl-8 bg-white/10 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder:text-white/30"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button 
-                          type="button"
-                          onClick={() => setGoalType('General')}
-                          className={`p-3 rounded-xl text-xs font-bold transition-all ${goalType === 'General' ? 'bg-white text-[#5A5A40]' : 'bg-white/10 text-white hover:bg-white/20'}`}
-                        >
-                          General
-                        </button>
-                        <button 
-                          type="button"
-                          onClick={() => setGoalType('Festival Bonus')}
-                          className={`p-3 rounded-xl text-xs font-bold transition-all ${goalType === 'Festival Bonus' ? 'bg-white text-[#5A5A40]' : 'bg-white/10 text-white hover:bg-white/20'}`}
-                        >
-                          Festival Bonus
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button 
-                          type="button"
-                          onClick={() => setPaymentMethod('upi')}
-                          className={`p-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${paymentMethod === 'upi' ? 'bg-white text-[#5A5A40]' : 'bg-white/10 text-white hover:bg-white/20'}`}
-                        >
-                          <Smartphone className="w-4 h-4" />
-                          UPI
-                        </button>
-                        <button 
-                          type="button"
-                          onClick={() => setPaymentMethod('stripe')}
-                          className={`p-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${paymentMethod === 'stripe' ? 'bg-white text-[#5A5A40]' : 'bg-white/10 text-white hover:bg-white/20'}`}
-                        >
-                          <DollarSign className="w-4 h-4" />
-                          Card
-                        </button>
-                      </div>
-                      <input 
-                        type="text" 
-                        value={busInput}
-                        onChange={(e) => setBusInput(e.target.value)}
-                        placeholder="Bus Number (e.g. 42)"
-                        className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder:text-white/30"
-                      />
-                      <input 
-                        type="text" 
-                        value={purposeInput}
-                        onChange={(e) => setPurposeInput(e.target.value)}
-                        placeholder={goalType === 'Festival Bonus' ? 'e.g. Festival Bonus' : 'e.g. Field Trip'}
-                        className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 text-white placeholder:text-white/30"
-                      />
-                    </div>
-                  </div>
-                  <button 
-                    type="submit"
-                    disabled={isCreatingIntent}
-                    className={`w-full py-4 rounded-full font-bold transition-all shadow-lg mt-4 flex items-center justify-center gap-2 group disabled:opacity-50 ${paymentMethod === 'upi' ? 'bg-blue-500 hover:bg-blue-600 shadow-blue-500/20' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'}`}
-                  >
-                    {isCreatingIntent ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <>
-                        <span>{paymentMethod === 'upi' ? 'Pay via UPI' : 'Pay via Card'}</span>
-                        {paymentMethod === 'upi' ? (
-                          <Smartphone className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                        ) : (
-                          <DollarSign className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                        )}
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-lg opacity-90">Only students can make direct contributions. Please use the pledge form below to support us!</p>
-              </div>
-            )}
+            </form>
           </motion.div>
         </section>
       )}
@@ -772,10 +749,8 @@ function UpiModal({ amount, upiId, onComplete, onCancel }: { amount: number, upi
 function AppContent() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'support'>('support');
-  const [roleSelection, setRoleSelection] = useState<Role | null>(null);
-  const [busNumberInput, setBusNumberInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'support'>('dashboard');
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const totalFund = contributions.reduce((acc, curr) => acc + curr.amount, 0);
   const [amountInput, setAmountInput] = useState('');
@@ -810,7 +785,7 @@ function AppContent() {
     testConnection();
   }, []);
 
-  // Auth Listener
+  // Auth Listener (Optional now, but keeping it for admin check if user happens to be logged in)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
@@ -884,55 +859,8 @@ function AppContent() {
     return () => unsubscribe();
   }, [profile]);
 
-  const handleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-    } catch (err) {
-      setError("Login failed. Please try again.");
-    }
-  };
-
-  const handleLogout = () => signOut(auth);
-
-  const handleCompleteProfile = async () => {
-    if (!user || !roleSelection) return;
-    if (roleSelection === 'driver' && !busNumberInput) {
-      setError("Drivers must provide a bus number.");
-      return;
-    }
-
-    const path = `users/${user.uid}`;
-    
-    // Construct profile object without undefined values
-    const newProfile: UserProfile = {
-      uid: user.uid,
-      email: user.email || '',
-      displayName: user.displayName || 'Anonymous',
-      role: roleSelection,
-    };
-
-    if (busNumberInput) {
-      newProfile.busNumber = busNumberInput;
-    }
-
-    // Bootstrap admin check
-    if (user.email === "withprint231@gmail.com") {
-      newProfile.role = 'admin';
-    }
-
-    try {
-      await setDoc(doc(db, 'users', user.uid), newProfile);
-      setProfile(newProfile);
-      setError(null);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, path);
-    }
-  };
-
   const handleContribute = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profile || profile.role !== 'student') return;
     
     const amount = parseFloat(amountInput);
     if (isNaN(amount) || amount <= 0) {
@@ -946,7 +874,7 @@ function AppContent() {
     }
 
     if (!nameInput || !emailInput || !phoneInput) {
-      setError("Please fill in all support details (Name, Email, Phone).");
+      setError("Please fill in all details (Name, Email, Phone).");
       return;
     }
 
@@ -980,12 +908,11 @@ function AppContent() {
   };
 
   const finalizeContribution = async () => {
-    if (!profile) return;
     const amount = parseFloat(amountInput);
     const path = 'contributions';
     try {
       await addDoc(collection(db, 'contributions'), {
-        studentUid: profile.uid,
+        studentUid: user?.uid || 'guest',
         studentName: nameInput,
         studentEmail: emailInput,
         studentPhone: phoneInput,
@@ -1013,115 +940,6 @@ function AppContent() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F5F5F0] flex items-center justify-center">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        >
-          <Bus className="w-12 h-12 text-[#5A5A40]" />
-        </motion.div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[#F5F5F0] font-serif flex items-center justify-center p-6">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-white rounded-[40px] p-12 shadow-2xl text-center space-y-8"
-        >
-          <div className="w-20 h-20 bg-[#5A5A40] rounded-3xl flex items-center justify-center mx-auto mb-4 rotate-3">
-            <Bus className="w-10 h-10 text-white" />
-          </div>
-          
-          <div className="space-y-4">
-            <h1 className="text-4xl font-bold text-[#1A1A1A]">Festival Bonus</h1>
-            <p className="text-[#5A5A40] leading-relaxed">
-              Welcome to the Bus Drive fund. Please sign in with your Google account to access your dashboard and contribute.
-            </p>
-          </div>
-
-          <button 
-            onClick={handleLogin}
-            className="w-full bg-[#5A5A40] text-white py-5 rounded-full font-bold hover:bg-[#4A4A30] transition-all flex items-center justify-center gap-4 shadow-lg hover:shadow-xl active:scale-95"
-          >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
-            Sign in with Google
-          </button>
-
-          <div className="pt-6 border-t border-gray-100">
-            <p className="text-xs text-gray-400 font-sans uppercase tracking-widest">
-              Secure Login via Firebase Auth
-            </p>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-[#F5F5F0] flex flex-col items-center justify-center p-6 font-serif">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-white rounded-[32px] p-10 shadow-xl"
-        >
-          <h2 className="text-2xl font-bold text-[#1A1A1A] mb-6 text-center">Complete Your Profile</h2>
-          
-          <div className="space-y-4 mb-8">
-            <p className="text-sm text-[#5A5A40] mb-2 uppercase tracking-widest font-sans font-semibold">I am a...</p>
-            <div className="grid grid-cols-2 gap-4">
-              <button 
-                onClick={() => setRoleSelection('student')}
-                className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${roleSelection === 'student' ? 'border-[#5A5A40] bg-[#5A5A40]/5' : 'border-gray-100'}`}
-              >
-                <Users className={`w-8 h-8 ${roleSelection === 'student' ? 'text-[#5A5A40]' : 'text-gray-400'}`} />
-                <span className={roleSelection === 'student' ? 'font-bold' : ''}>Student</span>
-              </button>
-              <button 
-                onClick={() => setRoleSelection('driver')}
-                className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${roleSelection === 'driver' ? 'border-[#5A5A40] bg-[#5A5A40]/5' : 'border-gray-100'}`}
-              >
-                <Bus className={`w-8 h-8 ${roleSelection === 'driver' ? 'text-[#5A5A40]' : 'text-gray-400'}`} />
-                <span className={roleSelection === 'driver' ? 'font-bold' : ''}>Driver</span>
-              </button>
-            </div>
-          </div>
-
-          {roleSelection === 'driver' && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              className="mb-8"
-            >
-              <label className="block text-sm font-sans font-semibold text-[#5A5A40] uppercase tracking-widest mb-2">Bus Number</label>
-              <input 
-                type="text" 
-                value={busNumberInput}
-                onChange={(e) => setBusNumberInput(e.target.value)}
-                placeholder="e.g. 42"
-                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#5A5A40]"
-              />
-            </motion.div>
-          )}
-
-          <button 
-            onClick={handleCompleteProfile}
-            disabled={!roleSelection}
-            className="w-full bg-[#5A5A40] text-white py-4 rounded-full font-semibold disabled:opacity-50 hover:bg-[#4A4A30] transition-colors"
-          >
-            Get Started
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-[#F5F5F0] font-serif text-[#1A1A1A]">
       {/* Header */}
@@ -1135,7 +953,7 @@ function AppContent() {
               <div>
                 <h1 className="font-bold text-lg leading-tight">Festival Bonus Bus Drive</h1>
                 <p className="text-xs text-[#5A5A40] font-sans uppercase tracking-widest">
-                  {profile.role === 'driver' ? `Bus ${profile.busNumber} Driver` : profile.role === 'admin' ? 'Administrator' : 'Student Contributor'}
+                  Public Dashboard
                 </p>
               </div>
             </div>
@@ -1154,15 +972,6 @@ function AppContent() {
                 Support
               </button>
             </nav>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={handleLogout}
-              className="p-2 hover:bg-gray-50 rounded-full transition-colors text-gray-400 hover:text-red-500"
-            >
-              <LogOut className="w-6 h-6" />
-            </button>
           </div>
         </div>
       </header>
@@ -1187,7 +996,7 @@ function AppContent() {
                 </span>
               </div>
               <p className="text-xs text-[#5A5A40] font-sans font-bold uppercase tracking-widest mb-4">
-                {profile.role === 'driver' ? 'Total Collected' : profile.role === 'admin' ? 'Total System Funds' : 'Your Contributions'}
+                Total Collected
               </p>
               <div className="flex items-baseline gap-2 mb-2">
                 <h2 className="text-6xl font-sans font-bold">
@@ -1263,7 +1072,7 @@ function AppContent() {
                         </div>
                         <div>
                           <p className="font-bold text-lg">
-                            {profile.role === 'driver' || profile.role === 'admin' ? c.studentName : `Bus ${c.busNumber}`}
+                            {c.studentName || 'Anonymous'}
                           </p>
                           <div className="flex items-center gap-2 text-sm text-[#5A5A40] italic mb-1">
                             <span>{c.purpose}</span>

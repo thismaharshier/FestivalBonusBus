@@ -68,7 +68,7 @@ service cloud.firestore {
 
     function isValidContribution(data) {
       return data.keys().hasAll(['studentUid', 'amount', 'busNumber', 'purpose', 'timestamp']) &&
-             data.studentUid == request.auth.uid &&
+             data.studentUid is string &&
              data.amount is number && data.amount > 0 &&
              data.busNumber is string && data.busNumber.size() > 0 && data.busNumber.size() < 20 &&
              data.purpose is string && data.purpose.size() > 0 && data.purpose.size() < 50 &&
@@ -111,7 +111,7 @@ service cloud.firestore {
 
     match /contributions/{contributionId} {
       allow read: if true;
-      allow create: if isAuthenticated();
+      allow create: if isValidContribution(request.resource.data);
       allow update, delete: if isAdmin();
     }
 
