@@ -348,46 +348,6 @@ function SupportPage({
         </section>
       )}
 
-      {/* Dashboard Summary Section */}
-      <section className="space-y-8">
-        <div className="text-center space-y-2">
-          <h2 className="text-4xl font-bold flex items-center justify-center gap-3">
-            Fund Dashboard 📊
-          </h2>
-          <p className="text-gray-500 font-sans">
-            Live overview of the Festival Bonus Bus Drive progress.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-[32px] p-8 shadow-xl border border-gray-100 flex flex-col items-center text-center"
-          >
-            <div className="p-4 bg-emerald-50 rounded-2xl mb-4">
-              <TrendingUp className="w-8 h-8 text-emerald-600" />
-            </div>
-            <h3 className="text-sm text-gray-400 font-sans uppercase tracking-widest mb-1">Total Fund Raised</h3>
-            <p className="text-5xl font-bold text-gray-900">₹{totalFund.toLocaleString()}</p>
-            <p className="text-xs text-emerald-600 font-sans font-bold mt-2 uppercase tracking-widest">Live Updates</p>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-[32px] p-8 shadow-xl border border-gray-100 flex flex-col items-center text-center"
-          >
-            <div className="p-4 bg-blue-50 rounded-2xl mb-4">
-              <Users className="w-8 h-8 text-blue-600" />
-            </div>
-            <h3 className="text-sm text-gray-400 font-sans uppercase tracking-widest mb-1">Total Contributors</h3>
-            <p className="text-5xl font-bold text-gray-900">{contributionsCount}</p>
-            <p className="text-xs text-blue-600 font-sans font-bold mt-2 uppercase tracking-widest">Active Supporters</p>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Pledge Section */}
       <section className="text-center space-y-8">
         <div className="space-y-2">
@@ -750,7 +710,6 @@ function AppContent() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'support'>('dashboard');
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const totalFund = contributions.reduce((acc, curr) => acc + curr.amount, 0);
   const [amountInput, setAmountInput] = useState('');
@@ -957,150 +916,12 @@ function AppContent() {
                 </p>
               </div>
             </div>
-            
-            <nav className="hidden md:flex items-center gap-6 font-sans text-sm font-semibold uppercase tracking-widest">
-              <button 
-                onClick={() => setActiveTab('dashboard')}
-                className={`transition-colors ${activeTab === 'dashboard' ? 'text-[#5A5A40]' : 'text-gray-400 hover:text-[#5A5A40]'}`}
-              >
-                Dashboard
-              </button>
-              <button 
-                onClick={() => setActiveTab('support')}
-                className={`transition-colors ${activeTab === 'support' ? 'text-[#5A5A40]' : 'text-gray-400 hover:text-[#5A5A40]'}`}
-              >
-                Support
-              </button>
-            </nav>
           </div>
         </div>
       </header>
 
-      {activeTab === 'dashboard' ? (
-        <main className="max-w-5xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Stats & Forms */}
-        <div className="lg:col-span-1 space-y-8">
-          {/* Stats Card */}
-          <div className="bg-[#CCCCCC] p-4 rounded-[48px]">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-[32px] p-8"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <div className="p-3 bg-emerald-50 rounded-2xl">
-                  <TrendingUp className="w-6 h-6 text-emerald-600" />
-                </div>
-                <span className="text-[10px] font-sans font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md uppercase tracking-widest">
-                  Live
-                </span>
-              </div>
-              <p className="text-xs text-[#5A5A40] font-sans font-bold uppercase tracking-widest mb-4">
-                Total Collected
-              </p>
-              <div className="flex items-baseline gap-2 mb-2">
-                <h2 className="text-6xl font-sans font-bold">
-                  ₹{totalFund.toLocaleString()}
-                </h2>
-                <span className="text-2xl text-[#5A5A40] font-serif">INR</span>
-              </div>
-              <p className="text-xs text-gray-400 font-serif">
-                From {contributions.length} total transactions
-              </p>
-            </motion.div>
-          </div>
-
-          {/* Driver Info (Driver Only) */}
-          {profile?.role === 'driver' && (
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-[#5A5A40] rounded-[32px] p-8 shadow-lg text-white"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <Bus className="w-6 h-6" />
-                <h3 className="text-xl font-bold">Bus {profile?.busNumber}</h3>
-              </div>
-              <p className="text-sm opacity-80 leading-relaxed">
-                You are currently managing the fund for Bus {profile?.busNumber}. 
-                All contributions from students for this bus will appear in your history.
-              </p>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Right Column: History */}
-        <div className="lg:col-span-2">
-          <div className="bg-[#CCCCCC] p-4 rounded-[48px]">
-            <div className="bg-white rounded-[32px] p-8 min-h-[600px]">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-gray-50 rounded-2xl">
-                    <History className="w-6 h-6 text-[#5A5A40]" />
-                  </div>
-                  <h3 className="text-3xl font-serif">Transaction History</h3>
-                </div>
-                <span className="text-sm text-gray-400 font-sans">
-                  {contributions.length} entries
-                </span>
-              </div>
-
-            <div className="space-y-4">
-              <AnimatePresence mode="popLayout">
-                {contributions.length === 0 ? (
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex flex-col items-center justify-center py-20 text-gray-400"
-                  >
-                    <Coins className="w-12 h-12 mb-4 opacity-20" />
-                    <p>No transactions found yet.</p>
-                  </motion.div>
-                ) : (
-                  contributions.map((c) => (
-                    <motion.div 
-                      key={c.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="flex items-center justify-between p-6 rounded-2xl border border-gray-50 hover:border-gray-100 hover:bg-gray-50/50 transition-all group"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center group-hover:bg-white transition-colors">
-                          <UserIcon className="w-6 h-6 text-gray-400" />
-                        </div>
-                        <div>
-                          <p className="font-bold text-lg">
-                            {c.studentName || 'Anonymous'}
-                          </p>
-                          <div className="flex items-center gap-2 text-sm text-[#5A5A40] italic mb-1">
-                            <span>{c.purpose}</span>
-                            {c.studentPhone && (
-                              <span className="text-xs font-sans font-normal not-italic text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                                📞 {c.studentPhone}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-gray-400 font-sans uppercase tracking-widest">
-                            {c.timestamp?.toDate().toLocaleDateString()} at {c.timestamp?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xl font-bold text-[#5A5A40]">₹{c.amount.toLocaleString()}</p>
-                        <p className="text-[10px] text-emerald-600 font-sans font-bold uppercase tracking-widest">{c.goalType || 'Contribution'}</p>
-                      </div>
-                    </motion.div>
-                  ))
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-      ) : (
+      <main className="max-w-5xl mx-auto p-6 space-y-12">
+        {/* Support / Contribution Form Section */}
         <SupportPage 
           user={user} 
           profile={profile}
@@ -1117,7 +938,131 @@ function AppContent() {
           goalType={goalType} setGoalType={setGoalType}
           paymentMethod={paymentMethod} setPaymentMethod={setPaymentMethod}
         />
-      )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column: Stats */}
+          <div className="lg:col-span-1 space-y-8">
+            {/* Stats Card */}
+            <div className="bg-[#CCCCCC] p-4 rounded-[48px]">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="bg-white rounded-[32px] p-8"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <div className="p-3 bg-emerald-50 rounded-2xl">
+                    <TrendingUp className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <span className="text-[10px] font-sans font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md uppercase tracking-widest">
+                    Live
+                  </span>
+                </div>
+                <p className="text-xs text-[#5A5A40] font-sans font-bold uppercase tracking-widest mb-4">
+                  Total Collected
+                </p>
+                <div className="flex items-baseline gap-2 mb-2">
+                  <h2 className="text-6xl font-sans font-bold">
+                    ₹{totalFund.toLocaleString()}
+                  </h2>
+                  <span className="text-2xl text-[#5A5A40] font-serif">INR</span>
+                </div>
+                <p className="text-xs text-gray-400 font-serif">
+                  From {contributions.length} total transactions
+                </p>
+              </motion.div>
+            </div>
+
+            {/* Driver Info (Driver Only) */}
+            {profile?.role === 'driver' && (
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-[#5A5A40] rounded-[32px] p-8 shadow-lg text-white"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <Bus className="w-6 h-6" />
+                  <h3 className="text-xl font-bold">Bus {profile?.busNumber}</h3>
+                </div>
+                <p className="text-sm opacity-80 leading-relaxed">
+                  You are currently managing the fund for Bus {profile?.busNumber}. 
+                  All contributions from students for this bus will appear in your history.
+                </p>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Right Column: History */}
+          <div className="lg:col-span-2">
+            <div className="bg-[#CCCCCC] p-4 rounded-[48px]">
+              <div className="bg-white rounded-[32px] p-8 min-h-[600px]">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-gray-50 rounded-2xl">
+                      <History className="w-6 h-6 text-[#5A5A40]" />
+                    </div>
+                    <h3 className="text-3xl font-serif">Transaction History</h3>
+                  </div>
+                  <span className="text-sm text-gray-400 font-sans">
+                    {contributions.length} entries
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  <AnimatePresence mode="popLayout">
+                    {contributions.length === 0 ? (
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex flex-col items-center justify-center py-20 text-gray-400"
+                      >
+                        <Coins className="w-12 h-12 mb-4 opacity-20" />
+                        <p>No transactions found yet.</p>
+                      </motion.div>
+                    ) : (
+                      contributions.map((c) => (
+                        <motion.div 
+                          key={c.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          className="flex items-center justify-between p-6 rounded-2xl border border-gray-50 hover:border-gray-100 hover:bg-gray-50/50 transition-all group"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center group-hover:bg-white transition-colors">
+                              <UserIcon className="w-6 h-6 text-gray-400" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-lg">
+                                {c.studentName || 'Anonymous'}
+                              </p>
+                              <div className="flex items-center gap-2 text-sm text-[#5A5A40] italic mb-1">
+                                <span>{c.purpose}</span>
+                                {c.studentPhone && (
+                                  <span className="text-xs font-sans font-normal not-italic text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+                                    📞 {c.studentPhone}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-400 font-sans uppercase tracking-widest">
+                                {c.timestamp?.toDate().toLocaleDateString()} at {c.timestamp?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xl font-bold text-[#5A5A40]">₹{c.amount.toLocaleString()}</p>
+                            <p className="text-[10px] text-emerald-600 font-sans font-bold uppercase tracking-widest">{c.goalType || 'Contribution'}</p>
+                          </div>
+                        </motion.div>
+                      ))
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
 
       {/* Payment Modal (Stripe) */}
       <AnimatePresence>
