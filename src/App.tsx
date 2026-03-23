@@ -921,6 +921,65 @@ function AppContent() {
       </header>
 
       <main className="max-w-5xl mx-auto p-6 space-y-12">
+        {/* Bus Gallery Section */}
+        <section className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-[#5A5A40] rounded-full flex items-center justify-center">
+              <Bus className="w-4 h-4 text-white" />
+            </div>
+            <h2 className="text-xl font-bold font-serif">Our Festival Fleet</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative h-64 rounded-[32px] overflow-hidden shadow-lg group"
+          >
+            <img 
+              src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=800" 
+              alt="Festival Bus 1" 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+              <p className="text-white font-sans font-bold uppercase tracking-widest text-xs">Our Fleet</p>
+            </div>
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="relative h-64 rounded-[32px] overflow-hidden shadow-lg group"
+          >
+            <img 
+              src="https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&q=80&w=800" 
+              alt="Festival Bus 2" 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+              <p className="text-white font-sans font-bold uppercase tracking-widest text-xs">Community Drive</p>
+            </div>
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="relative h-64 rounded-[32px] overflow-hidden shadow-lg group"
+          >
+            <img 
+              src="https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=800" 
+              alt="Festival Bus 3" 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+              <p className="text-white font-sans font-bold uppercase tracking-widest text-xs">Festival Spirit</p>
+            </div>
+          </motion.div>
+          </div>
+        </section>
+
         {/* Support / Contribution Form Section */}
         <SupportPage 
           user={user} 
