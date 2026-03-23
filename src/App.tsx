@@ -213,7 +213,7 @@ function SupportPage({
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-16 py-12">
       {/* Contribution Section (For Students or Unauthenticated) */}
-      {(!profile || profile.role === 'student') && (
+      {(!profile || profile?.role === 'student') && (
         <section className="space-y-8">
           <div className="text-center space-y-2">
             <h2 className="text-4xl font-bold flex items-center justify-center gap-3">
@@ -817,15 +817,15 @@ function AppContent() {
     const path = 'contributions';
     let q;
     if (profile) {
-      if (profile.role === 'student') {
+      if (profile?.role === 'student') {
         q = query(
           collection(db, 'contributions'),
-          where('studentUid', '==', profile.uid)
+          where('studentUid', '==', profile?.uid)
         );
-      } else if (profile.role === 'driver') {
+      } else if (profile?.role === 'driver') {
         q = query(
           collection(db, 'contributions'),
-          where('busNumber', '==', profile.busNumber)
+          where('busNumber', '==', profile?.busNumber)
         );
       } else {
         // Admin sees all
@@ -1011,7 +1011,7 @@ function AppContent() {
           </div>
 
           {/* Driver Info (Driver Only) */}
-          {profile.role === 'driver' && (
+          {profile?.role === 'driver' && (
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -1020,10 +1020,10 @@ function AppContent() {
             >
               <div className="flex items-center gap-3 mb-4">
                 <Bus className="w-6 h-6" />
-                <h3 className="text-xl font-bold">Bus {profile.busNumber}</h3>
+                <h3 className="text-xl font-bold">Bus {profile?.busNumber}</h3>
               </div>
               <p className="text-sm opacity-80 leading-relaxed">
-                You are currently managing the fund for Bus {profile.busNumber}. 
+                You are currently managing the fund for Bus {profile?.busNumber}. 
                 All contributions from students for this bus will appear in your history.
               </p>
             </motion.div>
